@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Login | Cookbook Studio{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-white border-bottom">
+    <div class="container py-4 text-center">
+        <h1 class="heading-lg mb-2">Welcome Back</h1>
+        <p class="text-secondary fs-5">Log in to manage your cookbooks, recipes, and chef profile.</p>
+    </div>
+</section>
+
+<section class="py-5 container">
+    <div class="row justify-content-center my-4">
+        <div class="col-md-6 col-lg-4">
+            <div class="card border p-4 p-md-5 bg-white shadow-sm">
+                <form method="POST">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-editorial btn-accent py-3">Login</button>
+                    </div>
+                </form>
+                <div class="text-center mt-4 fs-7 text-secondary">
+                    Don't have an account? <a href="{% url 'signup' %}" class="fw-bold text-dark text-decoration-none">Sign up here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

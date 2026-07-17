@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} | Cookbook Studio{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-white border-bottom">
+    <div class="container py-4">
+        <h1 class="heading-lg mb-2">{{ title }}</h1>
+        <p class="text-secondary fs-5">Curate your personalized collections of recipes for digital publication.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <form method="POST" enctype="multipart/form-data" class="bg-white border rounded p-4 p-md-5 shadow-sm">
+                    {% csrf_token %}
+                    
+                    <h3 class="heading-md mb-4 border-bottom pb-2">Collection Metadata</h3>
+                    {{ form.title|as_crispy_field }}
+                    {{ form.cover_image|as_crispy_field }}
+                    {{ form.description|as_crispy_field }}
+                    
+                    <h3 class="heading-md mt-5 mb-3 border-bottom pb-2">Recipes Selection</h3>
+                    <p class="text-secondary fs-7 mb-4">Choose the published recipes you want to include in this digital cookbook:</p>
+                    
+                    <div class="recipes-selection-grid p-3 border rounded bg-light mb-4" style="max-height: 350px; overflow-y: auto;">
+                        {{ form.recipes|as_crispy_field }}
+                    </div>
+                    
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-editorial btn-accent py-3 px-5">Save Cookbook</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

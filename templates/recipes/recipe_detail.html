@@ -1,0 +1,332 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ recipe.title }} | Cookbook Studio{% endblock %}
+
+{% block content %}
+<!-- Recipe Parallax Hero Image -->
+<div class="position-relative overflow-hidden" style="height: 60vh; background-color: var(--primary-charcoal);">
+    {% if recipe.cover_image %}
+        <img src="{{ recipe.cover_image.url }}" class="w-100 h-100 object-fit-cover opacity-75" style="transform: scale(1.02); filter: brightness(0.85);" alt="{{ recipe.title }}">
+    {% else %}
+        <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white-50">No Cover Image</div>
+    {% endif %}
+    
+    <div class="position-absolute bottom-0 start-0 w-100 p-5 bg-gradient-to-t from-dark to-transparent text-white">
+        <div class="container">
+            <span class="badge bg-danger mb-3 py-2 px-3 text-uppercase font-bold fs-8" style="background-color: var(--accent-terracotta) !important;">
+                {{ recipe.category.name }}
+            </span>
+            <h1 class="heading-lg text-white mb-2" style="text-shadow: 0 2px 4px rgba(0,0,0,0.3);">{{ recipe.title }}</h1>
+            <div class="d-flex align-items-center gap-3 fs-7 text-white-50 mt-3">
+                <span>By <a href="{% url 'profile_view' username=recipe.author.username %}" class="text-white text-decoration-none fw-bold">{{ recipe.author.get_full_name|default:recipe.author.username }}</a></span>
+                <span>&bull;</span>
+                <span>Published {{ recipe.created_at|date:"F d, Y" }}</span>
+                <span>&bull;</span>
+                <span><i class="bi bi-eye"></i> {{ recipe.view_count }} views</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row">
+        <!-- Recipe Main Content -->
+        <div class="col-lg-8">
+            <!-- Meta details row -->
+            <div class="row text-center mb-5 g-2">
+                <div class="col-6 col-md-3">
+                    <div class="p-3 border rounded bg-white shadow-sm">
+                        <span class="text-secondary fs-8 text-uppercase d-block" style="letter-spacing:1px;">Prep Time</span>
+                        <strong class="fs-5">{{ recipe.prep_time }} mins</strong>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 border rounded bg-white shadow-sm">
+                        <span class="text-secondary fs-8 text-uppercase d-block" style="letter-spacing:1px;">Cook Time</span>
+                        <strong class="fs-5">{{ recipe.cook_time }} mins</strong>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 border rounded bg-white shadow-sm">
+                        <span class="text-secondary fs-8 text-uppercase d-block" style="letter-spacing:1px;">Servings</span>
+                        <strong class="fs-5">{{ recipe.servings }}</strong>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 border rounded bg-white shadow-sm">
+                        <span class="text-secondary fs-8 text-uppercase d-block" style="letter-spacing:1px;">Difficulty</span>
+                        <strong class="fs-5">{{ recipe.difficulty }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="recipe-description mb-5 fs-5">
+                {{ recipe.description|safe }}
+            </div>
+
+            <!-- Checklist Ingredients -->
+            <div class="mb-5">
+                <h3 class="heading-md border-bottom pb-2 mb-4">Ingredients</h3>
+                <ul class="ingredient-checklist">
+                    {% for ing in recipe.ingredients.all %}
+                        <li class="ingredient-item">
+                            <input type="checkbox" id="ing-{{ ing.id }}">
+                            <span class="checkbox-custom"></span>
+                            <span class="ingredient-text">
+                                {% if ing.amount or ing.unit %}
+                                    <strong class="text-dark">{{ ing.amount }} {{ ing.unit }}</strong>
+                                {% endif %}
+                                {{ ing.name }}
+                            </span>
+                        </li>
+                    {% empty %}
+                        <p class="text-secondary">No ingredients specified.</p>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Cooking Steps -->
+            <div class="mb-5">
+                <h3 class="heading-md border-bottom pb-2 mb-4">Preparation Steps</h3>
+                {% for step in recipe.steps.all %}
+                    <div class="step-card">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="step-number">Step {{ step.step_number }}</span>
+                        </div>
+                        
+                        {% if step.image %}
+                            <div class="mb-3 overflow-hidden rounded" style="max-height: 300px;">
+                                <img src="{{ step.image.url }}" class="w-100 object-fit-cover" alt="Step {{ step.step_number }} picture">
+                            </div>
+                        {% endif %}
+                        
+                        <p class="fs-6 mb-0">{{ step.description }}</p>
+                        
+                        {% if step.tip %}
+                            <div class="step-tip">
+                                <strong>Chef's Note:</strong> {{ step.tip }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <p class="text-secondary">No cooking steps specified.</p>
+                {% endfor %}
+            </div>
+
+            <!-- Chef Notes -->
+            {% if recipe.chef_notes %}
+                <div class="chef-notes-card">
+                    <h4 class="fs-5 mb-2"><i class="bi bi-journal-text text-danger"></i> Chef's Secret Notes</h4>
+                    <p class="mb-0 fs-6 text-secondary" style="white-space: pre-line;">{{ recipe.chef_notes }}</p>
+                </div>
+            {% endif %}
+
+            <!-- Nutrition Panel -->
+            <div class="mb-5">
+                <h3 class="heading-md border-bottom pb-2 mb-4">Nutrition Information</h3>
+                <div class="nutrition-grid">
+                    <div class="nutrition-item">
+                        <div class="nutrition-value">{{ recipe.nutrition_calories }}</div>
+                        <div class="nutrition-label">Calories</div>
+                    </div>
+                    <div class="nutrition-item">
+                        <div class="nutrition-value">{{ recipe.nutrition_carbs }}g</div>
+                        <div class="nutrition-label">Carbs</div>
+                    </div>
+                    <div class="nutrition-item">
+                        <div class="nutrition-value">{{ recipe.nutrition_protein }}g</div>
+                        <div class="nutrition-label">Protein</div>
+                    </div>
+                    <div class="nutrition-item">
+                        <div class="nutrition-value">{{ recipe.nutrition_fat }}g</div>
+                        <div class="nutrition-label">Fat</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="mb-5 border-top pt-5">
+                <h3 class="heading-md mb-4">Chef Discussion ({{ recipe.comments.count }} Comments)</h3>
+                
+                <!-- Comment list -->
+                <div class="comments-thread mb-4">
+                    {% for comment in comments %}
+                        <div class="p-3 border rounded mb-3 bg-white shadow-sm" id="comment-{{ comment.id }}">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold fs-7">{{ comment.author.get_full_name|default:comment.author.username }}</span>
+                                <span class="text-muted fs-8">{{ comment.created_at|timesince }} ago</span>
+                            </div>
+                            <p class="mb-2 fs-6">{{ comment.content }}</p>
+                            
+                            {% if user.is_authenticated %}
+                                <a href="#" class="reply-link fs-8 text-decoration-none text-muted" data-comment-id="{{ comment.id }}"><i class="bi bi-reply-fill"></i> Reply</a>
+                            {% endif %}
+                            
+                            <!-- Nested Replies -->
+                            {% if comment.replies.all %}
+                                <div class="ms-4 mt-3 border-start ps-3">
+                                    {% for reply in comment.replies.all %}
+                                        <div class="p-2 border rounded mb-2 bg-light shadow-sm">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="fw-semibold fs-7">{{ reply.author.get_full_name|default:reply.author.username }}</span>
+                                                <span class="text-muted fs-8">{{ reply.created_at|timesince }} ago</span>
+                                            </div>
+                                            <p class="mb-0 fs-6">{{ reply.content }}</p>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <p class="text-secondary">Be the first to share your experience cooking this recipe!</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Add Comment Form -->
+                {% if user.is_authenticated %}
+                    <div class="card border p-4 bg-white">
+                        <h4 class="fs-5 mb-3" id="comment-form-title">Join the Discussion</h4>
+                        <form action="{% url 'add_comment' slug=recipe.slug %}" method="POST" id="recipe-comment-form">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                {{ comment_form.content }}
+                            </div>
+                            {{ comment_form.parent }}
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-editorial btn-accent">Post Comment</button>
+                                <button type="button" class="btn btn-editorial btn-outline-editorial" id="cancel-reply-btn" style="display: none;">Cancel Reply</button>
+                            </div>
+                        </form>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning text-center">
+                        Please <a href="{% url 'login' %}" class="fw-bold">login</a> or <a href="{% url 'signup' %}" class="fw-bold">signup</a> to participate in the chef comments thread.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recipe Sidebar Actions -->
+        <div class="col-lg-4">
+            <div class="position-sticky" style="top: 100px;">
+                <div class="card border p-4 bg-white shadow-sm mb-4">
+                    <h4 class="fs-5 mb-3">Chef Dashboard</h4>
+                    
+                    <!-- Likes trigger -->
+                    <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+                        <span class="text-secondary fs-6"><i class="bi bi-heart-fill text-danger"></i> Appreciation</span>
+                        <div>
+                            <span class="fw-bold me-2" id="like-count-label">{{ recipe.like_count }}</span>
+                            {% if user.is_authenticated %}
+                                <button id="like-recipe-btn" data-recipe-slug="{{ recipe.slug }}" class="btn btn-sm btn-outline-secondary">
+                                    {% if user_has_liked %}
+                                        <i class="bi bi-heart-fill heart-icon text-danger"></i>
+                                    {% else %}
+                                        <i class="bi bi-heart heart-icon"></i>
+                                    {% endif %}
+                                </button>
+                            {% else %}
+                                <a href="{% url 'login' %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-heart"></i></a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Edit/Delete Action for Authors -->
+                    {% if user.is_authenticated and user == recipe.author or user.is_staff %}
+                        <div class="d-grid gap-2 border-bottom pb-4 mb-4">
+                            <a href="{% url 'recipe_edit' slug=recipe.slug %}" class="btn btn-editorial btn-outline-editorial w-100 py-2"><i class="bi bi-pencil-square"></i> Edit Recipe</a>
+                            <a href="{% url 'recipe_delete' slug=recipe.slug %}" class="btn btn-editorial btn-outline-editorial border-danger text-danger w-100 py-2"><i class="bi bi-trash"></i> Delete Recipe</a>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Print and PDF action -->
+                    <div class="d-grid gap-2 mb-2">
+                        <button onclick="window.print()" class="btn btn-editorial btn-outline-editorial w-100 py-2"><i class="bi bi-printer"></i> Print Recipe</button>
+                    </div>
+                </div>
+
+                <!-- Cookbooks connection -->
+                <div class="card border p-4 bg-light shadow-sm">
+                    <h4 class="fs-5 mb-3">Cookbook Inclusions</h4>
+                    <p class="fs-7 text-secondary">This recipe is currently preserved in these digital collections:</p>
+                    <ul class="list-unstyled mb-0">
+                        {% for cb in recipe.cookbooks.all %}
+                            <li class="mb-2 fs-6">
+                                <a href="{% url 'cookbook_detail' slug=cb.slug %}" class="text-decoration-none text-dark"><i class="bi bi-book"></i> {{ cb.title }}</a>
+                            </li>
+                        {% empty %}
+                            <li class="text-secondary fs-7">Not part of any cookbooks yet.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Recipes -->
+    <div class="border-top pt-5 mt-5">
+        <div class="text-center mb-5">
+            <span class="text-uppercase tracking-wider" style="color: var(--accent-terracotta); font-size: 13px; font-weight: 600; letter-spacing: 2px;">More Flavors</span>
+            <h2 class="heading-lg">Related Recipes</h2>
+            <div class="mx-auto" style="width: 50px; height: 2px; background-color: var(--accent-terracotta); margin-top: 10px;"></div>
+        </div>
+
+        <div class="row g-4">
+            {% for rel in related_recipes %}
+                <div class="col-md-6 col-lg-3">
+                    <div class="card-editorial">
+                        <div class="card-img-wrapper">
+                            {% if rel.cover_image %}
+                                <img src="{{ rel.cover_image.url }}" class="card-img-editorial" alt="{{ rel.title }}">
+                            {% else %}
+                                <div class="w-100 h-100 bg-secondary d-flex align-items-center justify-content-center text-white">No Photo</div>
+                            {% endif %}
+                        </div>
+                        <div class="card-body-editorial">
+                            <span class="card-meta-editorial">{{ rel.category.name|upper }}</span>
+                            <h3 class="fs-6"><a href="{% url 'recipe_detail' slug=rel.slug %}" class="text-decoration-none text-dark">{{ rel.title }}</a></h3>
+                            <div class="d-flex align-items-center justify-content-between pt-2 border-top mt-3 fs-8 text-secondary">
+                                <span><i class="bi bi-clock"></i> {{ rel.total_time }} mins</span>
+                                <span>{{ rel.difficulty }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Threaded replies interaction
+    const replyLinks = document.querySelectorAll('.reply-link');
+    const parentInput = document.getElementById('id_parent');
+    const commentTitle = document.getElementById('comment-form-title');
+    const cancelBtn = document.getElementById('cancel-reply-btn');
+    const commentArea = document.querySelector('.comment-area');
+
+    replyLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const parentId = this.getAttribute('data-comment-id');
+            parentInput.value = parentId;
+            commentTitle.innerText = "Reply to Comment";
+            cancelBtn.style.display = 'inline-block';
+            commentArea.focus();
+            
+            // Scroll to form smoothly
+            document.getElementById('recipe-comment-form').scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+
+    cancelBtn.addEventListener('click', function() {
+        parentInput.value = '';
+        commentTitle.innerText = "Join the Discussion";
+        this.style.display = 'none';
+    });
+</script>
+{% endblock %}

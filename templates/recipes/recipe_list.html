@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Explore Gourmet Recipes | Cookbook Studio{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-white border-bottom">
+    <div class="container py-4">
+        <h1 class="heading-lg mb-2">Explore Our Recipe Archives</h1>
+        <p class="text-secondary fs-5" style="max-width: 600px;">
+            {% if query %}
+                Search results for "{{ query }}"
+            {% else %}
+                Browse through our beautifully styled, hand-crafted culinary recipes.
+            {% endif %}
+        </p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar Filters -->
+            <div class="col-lg-3 mb-4">
+                <div class="card border p-4 bg-light shadow-sm mb-4">
+                    <h4 class="fs-5 mb-4 border-bottom pb-2">Filter Archives</h4>
+                    
+                    <form action="{% url 'recipe_list' %}" method="GET" id="filter-form">
+                        <!-- Keep Search query -->
+                        {% if query %}
+                            <input type="hidden" name="q" value="{{ query }}">
+                        {% endif %}
+                        
+                        <!-- Categories -->
+                        <div class="mb-4">
+                            <label class="form-label font-bold text-uppercase fs-7" style="letter-spacing: 1px; color: var(--secondary-olive);">Category</label>
+                            <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Difficulty -->
+                        <div class="mb-4">
+                            <label class="form-label font-bold text-uppercase fs-7" style="letter-spacing: 1px; color: var(--secondary-olive);">Difficulty</label>
+                            <select name="difficulty" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <option value="">All Difficulties</option>
+                                <option value="Easy" {% if selected_difficulty == 'Easy' %}selected{% endif %}>Easy</option>
+                                <option value="Medium" {% if selected_difficulty == 'Medium' %}selected{% endif %}>Medium</option>
+                                <option value="Hard" {% if selected_difficulty == 'Hard' %}selected{% endif %}>Hard</option>
+                            </select>
+                        </div>
+
+                        <a href="{% url 'recipe_list' %}" class="btn btn-editorial btn-outline-editorial btn-sm w-100 mt-2 text-center py-2 d-block">Clear Filters</a>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Recipes Grid -->
+            <div class="col-lg-9">
+                <div class="row g-4">
+                    {% if recipes %}
+                        {% for recipe in recipes %}
+                            <div class="col-md-6">
+                                <div class="card-editorial">
+                                    <div class="card-img-wrapper">
+                                        {% if recipe.cover_image %}
+                                            <img src="{{ recipe.cover_image.url }}" class="card-img-editorial" alt="{{ recipe.title }}">
+                                        {% else %}
+                                            <div class="w-100 h-100 bg-secondary d-flex align-items-center justify-content-center text-white">No Photo</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="card-body-editorial">
+                                        <span class="card-meta-editorial">{{ recipe.category.name|upper }} | {{ recipe.difficulty }}</span>
+                                        <h3><a href="{% url 'recipe_detail' slug=recipe.slug %}" class="text-decoration-none text-dark fs-5">{{ recipe.title }}</a></h3>
+                                        <p class="text-secondary fs-7 mb-4">{{ recipe.description|striptags|truncatewords:15 }}</p>
+                                        <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-auto fs-7 text-secondary">
+                                            <span><i class="bi bi-clock"></i> {{ recipe.total_time }} mins</span>
+                                            <span>By {{ recipe.author.get_full_name|default:recipe.author.username }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12 text-center py-5">
+                            <i class="bi bi-search fs-1 text-secondary mb-3 d-block"></i>
+                            <h3 class="fs-4">No recipes matched your search.</h3>
+                            <p class="text-secondary">Try broadening your keywords or clearing the active filters.</p>
+                            <a href="{% url 'recipe_list' %}" class="btn btn-editorial btn-accent mt-3">Reset Search</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Cookbook Studio | Premium Cooking Platform & Digital Cookbooks{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Sticky Glass Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-editorial sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">COOKBOOK <span>STUDIO</span></a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'recipe_list' %}">Recipes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'cookbook_list' %}">Cookbooks</a></li>
+                </ul>
+                
+                <!-- Autocomplete Search Form -->
+                <div class="search-container me-3 mb-2 mb-lg-0" style="width: 250px;">
+                    <form action="{% url 'recipe_list' %}" method="GET" class="d-flex">
+                        <input type="text" name="q" class="form-control search-editorial py-2" placeholder="Search recipes..." autocomplete="off">
+                    </form>
+                    <div class="search-autocomplete-dropdown"></div>
+                </div>
+
+                <ul class="navbar-nav mb-2 mb-lg-0">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i> {{ user.first_name|default:user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'profile_view' username=user.username %}">My Profile</a></li>
+                                <li><a class="dropdown-item" href="{% url 'recipe_create' %}">Create Recipe</a></li>
+                                <li><a class="dropdown-item" href="{% url 'cookbook_create' %}">Create Cookbook</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+                        <li class="nav-item"><a class="nav-link btn btn-editorial btn-accent px-3 py-1 ms-2" href="{% url 'signup' %}">Sign Up</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Message Framework -->
+    <div class="container mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Main Content Block -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-editorial">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h5 class="navbar-brand text-white mb-3">COOKBOOK <span style="color: var(--accent-terracotta);">STUDIO</span></h5>
+                    <p class="text-white-50">Discover recipes worth remembering. Create, share, and preserve your favorite culinary collections beautifully.</p>
+                </div>
+                <div class="col-6 col-lg-2 mb-4">
+                    <h6 class="text-uppercase text-white-50 mb-3" style="font-size:12px; letter-spacing:1.5px;">Navigation</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'home' %}">Home</a></li>
+                        <li><a href="{% url 'recipe_list' %}">Recipes</a></li>
+                        <li><a href="{% url 'cookbook_list' %}">Cookbooks</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-lg-3 mb-4">
+                    <h6 class="text-uppercase text-white-50 mb-3" style="font-size:12px; letter-spacing:1.5px;">Popular Categories</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'recipe_list' %}?category=breakfast">Breakfast</a></li>
+                        <li><a href="{% url 'recipe_list' %}?category=lunch">Lunch</a></li>
+                        <li><a href="{% url 'recipe_list' %}?category=dinner">Dinner</a></li>
+                        <li><a href="{% url 'recipe_list' %}?category=desserts">Desserts</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 mb-4">
+                    <h6 class="text-uppercase text-white-50 mb-3" style="font-size:12px; letter-spacing:1.5px;">Connect</h6>
+                    <p class="text-white-50 mb-3">Follow our social channels for editorial food inspirations.</p>
+                    <div class="d-flex gap-3 fs-5">
+                        <a href="#"><i class="bi bi-instagram"></i></a>
+                        <a href="#"><i class="bi bi-pinterest"></i></a>
+                        <a href="#"><i class="bi bi-facebook"></i></a>
+                        <a href="#"><i class="bi bi-twitter-x"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-border text-center text-white-50 fs-7">
+                <p>&copy; {% now "Y" %} Cookbook Studio. All rights reserved. Built for culinary excellence.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom Main Script -->
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

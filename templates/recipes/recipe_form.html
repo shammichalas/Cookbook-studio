@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} | Cookbook Studio{% endblock %}
+
+{% block extra_head %}
+<!-- Load form media for CKEditor 5 -->
+{{ form.media }}
+<style>
+    /* Styling adjustments for CKEditor within form */
+    .ck-editor__editable_inline {
+        min-height: 250px;
+        background-color: #fff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-white border-bottom">
+    <div class="container py-4">
+        <h1 class="heading-lg mb-2">{{ title }}</h1>
+        <p class="text-secondary fs-5">Share your culinary artistry with the community.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <form method="POST" enctype="multipart/form-data" class="bg-white border rounded p-4 p-md-5 shadow-sm">
+                    {% csrf_token %}
+                    
+                    <!-- Recipe Title & Cover Image -->
+                    <h3 class="heading-md mb-4 border-bottom pb-2">Recipe Details</h3>
+                    <div class="row">
+                        <div class="col-md-7 mb-3">
+                            {{ form.title|as_crispy_field }}
+                        </div>
+                        <div class="col-md-5 mb-3">
+                            {{ form.cover_image|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.category|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.tags_input|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <!-- Metadata -->
+                    <div class="row border-bottom pb-4 mb-4">
+                        <div class="col-md-3 mb-3">
+                            {{ form.prep_time|as_crispy_field }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form.cook_time|as_crispy_field }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form.servings|as_crispy_field }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form.difficulty|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <!-- Description Editor -->
+                    <div class="mb-4">
+                        {{ form.description|as_crispy_field }}
+                    </div>
+
+                    <!-- Ingredients Formset Builder -->
+                    <h3 class="heading-md mb-3 border-bottom pb-2">Ingredients Builder</h3>
+                    <div id="ingredients-container" class="mb-3">
+                        {{ ingredient_formset.management_form }}
+                        {% for ing_form in ingredient_formset.forms %}
+                            <div class="form-row-dynamic ingredient-form-row">
+                                {{ ing_form.id }}
+                                <div class="row">
+                                    <div class="col-md-3 mb-2">
+                                        <label class="form-label fs-8 text-secondary">Amount</label>
+                                        {{ ing_form.amount }}
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <label class="form-label fs-8 text-secondary">Unit</label>
+                                        {{ ing_form.unit }}
+                                    </div>
+                                    <div class="col-md-5 mb-2">
+                                        <label class="form-label fs-8 text-secondary">Ingredient Name</label>
+                                        {{ ing_form.name }}
+                                    </div>
+                                    <div class="col-md-1 mb-2 d-flex align-items-end justify-content-center">
+                                        {% if ingredient_formset.can_delete %}
+                                            <div style="display:none;">{{ ing_form.DELETE }}</div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row mb-2"><i class="bi bi-trash"></i></button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="btn btn-editorial btn-outline-editorial btn-sm mb-5" id="add-ingredient-btn"><i class="bi bi-plus-lg"></i> Add Ingredient</button>
+
+                    <!-- Steps Formset Builder -->
+                    <h3 class="heading-md mb-3 border-bottom pb-2">Method Builder</h3>
+                    <div id="steps-container" class="mb-3">
+                        {{ step_formset.management_form }}
+                        {% for step_form in step_formset.forms %}
+                            <div class="form-row-dynamic step-form-row">
+                                {{ step_form.id }}
+                                <div class="row">
+                                    <div class="col-md-2 mb-2">
+                                        <label class="form-label fs-8 text-secondary">Step No.</label>
+                                        {{ step_form.step_number }}
+                                    </div>
+                                    <div class="col-md-5 mb-2">
+                                        <label class="form-label fs-8 text-secondary">Step Image</label>
+                                        {{ step_form.image }}
+                                    </div>
+                                    <div class="col-md-5 mb-2">
+                                        <label class="form-label fs-8 text-secondary">Chef Step Tip (Optional)</label>
+                                        {{ step_form.tip }}
+                                    </div>
+                                    <div class="col-12 mb-2 mt-2">
+                                        <label class="form-label fs-8 text-secondary">Step Description</label>
+                                        {{ step_form.description }}
+                                    </div>
+                                    <div class="col-12 text-end">
+                                        {% if step_formset.can_delete %}
+                                            <div style="display:none;">{{ step_form.DELETE }}</div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row mt-2"><i class="bi bi-trash"></i> Remove Step</button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="btn btn-editorial btn-outline-editorial btn-sm mb-5" id="add-step-btn"><i class="bi bi-plus-lg"></i> Add Step</button>
+
+                    <!-- Chef Notes -->
+                    <h3 class="heading-md mb-3 border-bottom pb-2">Chef Notes & Nutrition</h3>
+                    <div class="mb-4">
+                        {{ form.chef_notes|as_crispy_field }}
+                    </div>
+
+                    <!-- Nutrition panel inputs -->
+                    <div class="row mb-5 border-bottom pb-4">
+                        <div class="col-6 col-md-3 mb-3">
+                            {{ form.nutrition_calories|as_crispy_field }}
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            {{ form.nutrition_carbs|as_crispy_field }}
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            {{ form.nutrition_protein|as_crispy_field }}
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            {{ form.nutrition_fat|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <!-- Draft toggle & Action buttons -->
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div class="form-check fs-6">
+                            {{ form.is_draft }}
+                            <label class="form-check-label" for="id_is_draft">
+                                Save as draft (Unpublished)
+                            </label>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-editorial btn-accent py-3 px-5">Save & Publish</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Script Templates for Formset Clones -->
+<script type="text/html" id="empty-ingredient-form">
+    <div class="row">
+        <div class="col-md-3 mb-2">
+            <label class="form-label fs-8 text-secondary">Amount</label>
+            <input type="text" name="ingredients-__prefix__-amount" class="form-control" placeholder="e.g., 2, 1/2" id="id_ingredients-__prefix__-amount">
+        </div>
+        <div class="col-md-3 mb-2">
+            <label class="form-label fs-8 text-secondary">Unit</label>
+            <input type="text" name="ingredients-__prefix__-unit" class="form-control" placeholder="e.g., cups, grams, tbsp" id="id_ingredients-__prefix__-unit">
+        </div>
+        <div class="col-md-5 mb-2">
+            <label class="form-label fs-8 text-secondary">Ingredient Name</label>
+            <input type="text" name="ingredients-__prefix__-name" class="form-control" placeholder="e.g., Flour, Sugar, Tomato" id="id_ingredients-__prefix__-name">
+        </div>
+        <div class="col-md-1 mb-2 d-flex align-items-end justify-content-center">
+            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row mb-2"><i class="bi bi-trash"></i></button>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="empty-step-form">
+    <div class="row">
+        <div class="col-md-2 mb-2">
+            <label class="form-label fs-8 text-secondary">Step No.</label>
+            <input type="number" name="steps-__prefix__-step_number" class="form-control step-number-field" readonly="readonly" id="id_steps-__prefix__-step_number">
+        </div>
+        <div class="col-md-5 mb-2">
+            <label class="form-label fs-8 text-secondary">Step Image</label>
+            <input type="file" name="steps-__prefix__-image" class="form-control" id="id_steps-__prefix__-image">
+        </div>
+        <div class="col-md-5 mb-2">
+            <label class="form-label fs-8 text-secondary">Chef Step Tip (Optional)</label>
+            <input type="text" name="steps-__prefix__-tip" class="form-control" placeholder="Optional tip for this step..." id="id_steps-__prefix__-tip">
+        </div>
+        <div class="col-12 mb-2 mt-2">
+            <label class="form-label fs-8 text-secondary">Step Description</label>
+            <textarea name="steps-__prefix__-description" cols="40" rows="2" class="form-control" placeholder="Describe this step..." id="id_steps-__prefix__-description" required></textarea>
+        </div>
+        <div class="col-12 text-end">
+            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row mt-2"><i class="bi bi-trash"></i> Remove Step</button>
+        </div>
+    </div>
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Autofill initial step numbers when loaded
+    document.querySelectorAll('.step-form-row').forEach((row, idx) => {
+        const stepNumInput = row.querySelector('.step-number-field');
+        if (stepNumInput && !stepNumInput.value) {
+            stepNumInput.value = idx + 1;
+        }
+    });
+</script>
+{% endblock %}

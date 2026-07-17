@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Section 1: Hero -->
+<section class="hero-editorial">
+    <img src="{% static 'images/hero_bg.png' %}" class="hero-bg" alt="Editorial Food Photography">
+    <div class="container hero-content text-center py-5">
+        <span class="hero-subtitle mb-2 d-inline-block">The Digital Magazine</span>
+        <h1 class="heading-xl mb-3">Discover Recipes Worth Remembering</h1>
+        <p class="fs-5 mb-4 text-center mx-auto" style="max-width: 600px; opacity: 0.9;">
+            Create, share and preserve your favorite culinary creations beautifully.
+        </p>
+        
+        <!-- Large Search Bar -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-10 col-lg-8">
+                <div class="search-container text-start">
+                    <form action="{% url 'recipe_list' %}" method="GET">
+                        <input type="text" name="q" class="form-control search-editorial py-3 px-4 shadow-lg" placeholder="Search by name, ingredients, categories, or chefs..." autocomplete="off">
+                    </form>
+                    <div class="search-autocomplete-dropdown"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-center gap-3">
+            <a href="#featured-section" class="btn btn-editorial btn-accent">Featured Recipes</a>
+            <a href="{% url 'recipe_list' %}" class="btn btn-editorial btn-outline-editorial border-white text-white">All Recipes</a>
+        </div>
+    </div>
+</section>
+
+<!-- Section 2: Featured Recipes -->
+<section id="featured-section" class="py-5 container mt-5 fade-in-section">
+    <div class="text-center mb-5">
+        <span class="text-uppercase tracking-wider" style="color: var(--accent-terracotta); font-size: 13px; font-weight: 600; letter-spacing: 2px;">Editor's Pick</span>
+        <h2 class="heading-lg">Recipes of the Week</h2>
+        <div class="mx-auto" style="width: 50px; height: 2px; background-color: var(--accent-terracotta); margin-top: 10px;"></div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            {% if featured_recipes %}
+                {% for recipe in featured_recipes %}
+                    <div class="card-horizontal">
+                        <div class="card-img-wrapper-horizontal">
+                            {% if recipe.cover_image %}
+                                <img src="{{ recipe.cover_image.url }}" alt="{{ recipe.title }}">
+                            {% else %}
+                                <div class="w-100 h-100 bg-secondary d-flex align-items-center justify-content-center text-white">No Photo</div>
+                            {% endif %}
+                        </div>
+                        <div class="card-body-horizontal">
+                            <span class="card-meta-editorial">{{ recipe.category.name|upper }} | {{ recipe.difficulty|upper }}</span>
+                            <h3 class="mb-3"><a href="{% url 'recipe_detail' slug=recipe.slug %}" class="text-decoration-none text-dark">{{ recipe.title }}</a></h3>
+                            <p class="text-secondary mb-4" style="font-size: 15px;">{{ recipe.description|striptags|truncatewords:25 }}</p>
+                            <div class="d-flex align-items-center justify-content-between mt-auto border-top pt-3">
+                                <span class="fs-7 text-secondary"><i class="bi bi-clock"></i> {{ recipe.total_time }} mins</span>
+                                <span class="fs-7 text-secondary"><i class="bi bi-person"></i> {{ recipe.author.get_full_name|default:recipe.author.username }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5 text-secondary">
+                    <p>No featured recipes published yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Section 3: Categories -->
+<section class="py-5 bg-white border-top border-bottom fade-in-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="text-uppercase tracking-wider" style="color: var(--secondary-olive); font-size: 13px; font-weight: 600; letter-spacing: 2px;">Flavors</span>
+            <h2 class="heading-lg">Browse by Category</h2>
+            <div class="mx-auto" style="width: 50px; height: 2px; background-color: var(--secondary-olive); margin-top: 10px;"></div>
+        </div>
+        
+        <div class="row row-cols-2 row-cols-md-4 g-4 justify-content-center">
+            {% if categories %}
+                {% for category in categories %}
+                    <div class="col">
+                        <a href="{% url 'category_recipes' slug=category.slug %}" class="card-category">
+                            {% if category.icon_image %}
+                                <img src="{{ category.icon_image.url }}" alt="{{ category.name }}">
+                            {% else %}
+                                <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px; border: 2px solid var(--border-cream);">
+                                    <i class="bi bi-egg-fried fs-3 text-secondary"></i>
+                                </div>
+                            {% endif %}
+                            <h4 class="fs-6 mb-0 mt-2">{{ category.name }}</h4>
+                        </a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <!-- Fallback standard categories if none in DB -->
+                <div class="col">
+                    <a href="{% url 'recipe_list' %}?category=breakfast" class="card-category">
+                        <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px; border: 2px solid var(--border-cream);">
+                            <i class="bi bi-cup-hot fs-3 text-secondary"></i>
+                        </div>
+                        <h4 class="fs-6 mb-0 mt-2">Breakfast</h4>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{% url 'recipe_list' %}?category=lunch" class="card-category">
+                        <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px; border: 2px solid var(--border-cream);">
+                            <i class="bi bi-egg-fried fs-3 text-secondary"></i>
+                        </div>
+                        <h4 class="fs-6 mb-0 mt-2">Lunch</h4>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{% url 'recipe_list' %}?category=dinner" class="card-category">
+                        <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px; border: 2px solid var(--border-cream);">
+                            <i class="bi bi-fire fs-3 text-secondary"></i>
+                        </div>
+                        <h4 class="fs-6 mb-0 mt-2">Dinner</h4>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{% url 'recipe_list' %}?category=desserts" class="card-category">
+                        <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px; border: 2px solid var(--border-cream);">
+                            <i class="bi bi-cake2 fs-3 text-secondary"></i>
+                        </div>
+                        <h4 class="fs-6 mb-0 mt-2">Desserts</h4>
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Section 4: Latest Recipes -->
+<section class="py-5 container mt-5 fade-in-section">
+    <div class="text-center mb-5">
+        <span class="text-uppercase tracking-wider" style="color: var(--accent-terracotta); font-size: 13px; font-weight: 600; letter-spacing: 2px;">Freshly Cooked</span>
+        <h2 class="heading-lg">Latest Recipes</h2>
+        <div class="mx-auto" style="width: 50px; height: 2px; background-color: var(--accent-terracotta); margin-top: 10px;"></div>
+    </div>
+    
+    <div class="row g-4">
+        {% if latest_recipes %}
+            {% for recipe in latest_recipes %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card-editorial">
+                        <div class="card-img-wrapper">
+                            {% if recipe.cover_image %}
+                                <img src="{{ recipe.cover_image.url }}" class="card-img-editorial" alt="{{ recipe.title }}">
+                            {% else %}
+                                <div class="w-100 h-100 bg-secondary d-flex align-items-center justify-content-center text-white">No Photo</div>
+                            {% endif %}
+                        </div>
+                        <div class="card-body-editorial">
+                            <span class="card-meta-editorial">{{ recipe.category.name|upper }} | {{ recipe.difficulty }}</span>
+                            <h3 class="fs-5"><a href="{% url 'recipe_detail' slug=recipe.slug %}" class="text-decoration-none text-dark">{{ recipe.title }}</a></h3>
+                            <p class="text-secondary fs-7 mb-4">{{ recipe.description|striptags|truncatewords:15 }}</p>
+                            <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-auto fs-7 text-secondary">
+                                <span><i class="bi bi-clock"></i> {{ recipe.total_time }} mins</span>
+                                <span>By {{ recipe.author.get_full_name|default:recipe.author.username }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5 text-secondary">
+                <p>No recipes published yet. Be the first to share one!</p>
+            </div>
+        {% endif %}
+    </div>
+    <div class="text-center mt-5">
+        <a href="{% url 'recipe_list' %}" class="btn btn-editorial btn-outline-editorial">View All Recipes</a>
+    </div>
+</section>
+
+<!-- Section 5: Popular Chefs -->
+<section class="py-5 bg-white border-top border-bottom fade-in-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="text-uppercase tracking-wider" style="color: var(--secondary-olive); font-size: 13px; font-weight: 600; letter-spacing: 2px;">Kitchen Masters</span>
+            <h2 class="heading-lg">Popular Chefs</h2>
+            <div class="mx-auto" style="width: 50px; height: 2px; background-color: var(--secondary-olive); margin-top: 10px;"></div>
+        </div>
+        
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4 justify-content-center text-center">
+            {% if popular_chefs %}
+                {% for chef in popular_chefs %}
+                    <div class="col">
+                        <div class="p-4 border rounded-3 bg-light">
+                            {% if chef.profile.profile_image %}
+                                <img src="{{ chef.profile.profile_image.url }}" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover; border: 3px solid var(--border-cream);" alt="{{ chef.username }}">
+                            {% else %}
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto mb-3 text-white fs-2" style="width: 100px; height: 100px; border: 3px solid var(--border-cream);">
+                                    {{ chef.username|slice:":1"|upper }}
+                                </div>
+                            {% endif %}
+                            <h4 class="fs-5 mb-1"><a href="{% url 'profile_view' username=chef.username %}" class="text-decoration-none text-dark">{{ chef.get_full_name|default:chef.username }}</a></h4>
+                            <p class="text-secondary fs-7 mb-3">{{ chef.num_recipes }} Exquisite Recipes</p>
+                            <a href="{% url 'profile_view' username=chef.username %}" class="btn btn-editorial btn-outline-editorial btn-sm py-1 px-3">View Chef</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center py-4 text-secondary">
+                    <p>No active chefs registered yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Section 6: Newsletter -->
+<section class="py-5 container fade-in-section">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="newsletter-card">
+                <span class="text-uppercase tracking-wider" style="color: var(--accent-terracotta); font-size: 13px; font-weight: 600; letter-spacing: 2px;">Newsletter</span>
+                <h2 class="heading-lg mt-2 mb-3">Fresh Stories In Your Inbox</h2>
+                <p class="text-secondary mx-auto mb-4" style="max-width: 500px; font-size: 15px;">
+                    Subscribe to receive beautiful recipes, cookbook publications, and premium culinary tips from our expert editors.
+                </p>
+                <form id="newsletter-form" class="row g-2 justify-content-center">
+                    {% csrf_token %}
+                    <div class="col-md-8 col-lg-7">
+                        <input type="email" name="email" class="form-control py-3" placeholder="Enter your email address" required>
+                    </div>
+                    <div class="col-md-4 col-lg-3">
+                        <button type="submit" class="btn btn-editorial btn-accent w-100 py-3">Subscribe</button>
+                    </div>
+                </form>
+                <div id="newsletter-alert" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

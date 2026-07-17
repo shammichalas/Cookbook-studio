@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Delete | {{ cookbook.title }}{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container my-5 py-5 text-center">
+        <div class="row justify-content-center">
+            <div class="col-md-6 card border p-5 shadow-sm">
+                <i class="bi bi-exclamation-triangle text-danger fs-1 mb-4"></i>
+                <h2 class="heading-md mb-3">Delete Cookbook?</h2>
+                <p class="text-secondary mb-4">Are you sure you want to permanently delete your digital cookbook <strong>"{{ cookbook.title }}"</strong>? The recipe list data inside it is safe, but the collection itself will be lost.</p>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-center gap-3">
+                        <button type="submit" class="btn btn-editorial btn-accent bg-danger px-4 py-2">Yes, Delete Cookbook</button>
+                        <a href="{% url 'cookbook_detail' slug=cookbook.slug %}" class="btn btn-editorial btn-outline-editorial px-4 py-2">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

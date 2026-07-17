@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ profile_user.get_full_name|default:profile_user.username }}'s Studio | Cookbook Studio{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-white border-bottom">
+    <div class="container">
+        <div class="row align-items-center text-center text-md-start">
+            <div class="col-md-3 col-lg-2 mb-4 mb-md-0 text-center">
+                {% if profile.profile_image %}
+                    <img src="{{ profile.profile_image.url }}" class="rounded-circle border border-3 shadow" style="width: 140px; height: 140px; object-fit: cover; border-color: var(--border-cream) !important;" alt="{{ profile_user.username }}">
+                {% else %}
+                    <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center border border-3 shadow text-white fs-1" style="width: 140px; height: 140px; border-color: var(--border-cream) !important;">
+                        {{ profile_user.username|slice:":1"|upper }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-9 col-lg-10">
+                <span class="text-uppercase tracking-wider fs-8 fw-semibold" style="color: var(--accent-terracotta); letter-spacing: 1px;">Chef Profile</span>
+                <h1 class="heading-lg my-1">{{ profile_user.get_full_name|default:profile_user.username }}</h1>
+                <p class="text-secondary fs-6 mb-3" style="max-width: 700px;">{{ profile.bio|default:"No culinary bio written yet." }}</p>
+                
+                <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-start gap-4 fs-7 text-secondary">
+                    <span><strong class="text-dark">{{ published_recipes.count }}</strong> Recipes</span>
+                    <span><strong class="text-dark" id="followers-count-label">{{ profile.follower_count }}</strong> Followers</span>
+                    <span><strong class="text-dark">{{ profile.following_count }}</strong> Following</span>
+                </div>
+
+                <div class="d-flex justify-content-center justify-content-md-start gap-2 mt-4">
+                    {% if user.is_authenticated %}
+                        {% if user == profile_user %}
+                            <a href="{% url 'edit_profile' %}" class="btn btn-editorial btn-outline-editorial py-2 px-3">Edit Profile</a>
+                            <a href="{% url 'recipe_create' %}" class="btn btn-editorial btn-accent py-2 px-3"><i class="bi bi-plus-lg"></i> Create Recipe</a>
+                        {% else %}
+                            <button id="follow-chef-btn" data-username="{{ profile_user.username }}" class="btn btn-editorial {% if is_following %}btn-outline-editorial{% else %}btn-accent{% endif %} py-2 px-4">
+                                {% if is_following %}Following{% else %}Follow Chef{% endif %}
+                            </button>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-editorial btn-accent py-2 px-4">Login to Follow</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Profile Statistics Panel -->
+<section class="py-4 bg-light border-bottom">
+    <div class="container text-center">
+        <div class="row g-2 justify-content-center">
+            <div class="col-6 col-md-3">
+                <span class="d-block text-secondary fs-8 text-uppercase" style="letter-spacing:1px;">Published Works</span>
+                <strong class="fs-4">{{ published_recipes.count }}</strong>
+            </div>
+            <div class="col-6 col-md-3">
+                <span class="d-block text-secondary fs-8 text-uppercase" style="letter-spacing:1px;">Total Views</span>
+                <strong class="fs-4">{{ total_views }}</strong>
+            </div>
+            <div class="col-6 col-md-3">
+                <span class="d-block text-secondary fs-8 text-uppercase" style="letter-spacing:1px;">Appreciations</span>
+                <strong class="fs-4">{{ total_likes }}</strong>
+            </div>
+            <div class="col-6 col-md-3">
+                <span class="d-block text-secondary fs-8 text-uppercase" style="letter-spacing:1px;">Collections</span>
+                <strong class="fs-4">{{ cookbooks.count }}</strong>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Profile Content Tabs -->
+<section class="py-5">
+    <div class="container">
+        <!-- Tab triggers -->
+        <ul class="nav nav-tabs justify-content-center mb-5 border-bottom" id="profileTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active py-3 px-4 fw-bold" id="recipes-tab" data-bs-toggle="tab" data-bs-target="#recipes-pane" type="button" role="tab" aria-controls="recipes-pane" aria-selected="true">Published Recipes ({{ published_recipes.count }})</button>
+            </li>
+            {% if user == profile_user %}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link py-3 px-4 fw-bold" id="drafts-tab" data-bs-toggle="tab" data-bs-target="#drafts-pane" type="button" role="tab" aria-controls="drafts-pane" aria-selected="false">Drafts ({{ drafts.count }})</button>
+                </li>
+            {% endif %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link py-3 px-4 fw-bold" id="favorites-tab" data-bs-toggle="tab" data-bs-target="#favorites-pane" type="button" role="tab" aria-controls="favorites-pane" aria-selected="false">Favorites ({{ favorites.count }})</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link py-3 px-4 fw-bold" id="cookbooks-tab" data-bs-toggle="tab" data-bs-target="#cookbooks-pane" type="button" role="tab" aria-controls="cookbooks-pane" aria-selected="false">Cookbooks ({{ cookbooks.count }})</button>
+            </li>
+        </ul>
+
+        <!-- Tab content panes -->
+        <div class="tab-content" id="profileTabContent">
+            <!-- Recipes Pane -->
+            <div class="tab-pane fade show active" id="recipes-pane" role="tabpanel" aria-labelledby="recipes-tab">
+                <div class="row g-4">
+                    {% for recipe in published_recipes %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card-editorial">
+                                <div class="card-img-wrapper">
+                                    {% if recipe.cover_image %}
+                                        <img src="{{ recipe.cover_image.url }}" class="card-img-editorial" alt="{{ recipe.title }}">
+                                    {% else %}
+                                        <div class="w-100 h-100 bg-secondary d-flex align-items-center justify-content-center text-white">No Photo</div>
+                                    {% endif %}
+                                </div>
+                                <div class="card-body-editorial">
+                                    <span class="card-meta-editorial">{{ recipe.category.name|upper }} | {{ recipe.difficulty }}</span>
+                                    <h3 class="fs-5"><a href="{% url 'recipe_detail' slug=recipe.slug %}" class="text-decoration-none text-dark">{{ recipe.title }}</a></h3>
+                                    <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-auto fs-7 text-secondary">
+                                        <span><i class="bi bi-clock"></i> {{ recipe.total_time }} mins</span>
+                                        <span><i class="bi bi-heart-fill text-danger"></i> {{ recipe.like_count }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-12 text-center py-5 text-secondary">
+                            <p>No published recipes yet.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Drafts Pane -->
+            {% if user == profile_user %}
+                <div class="tab-pane fade" id="drafts-pane" role="tabpanel" aria-labelledby="drafts-tab">
+                    <div class="row g-4">
+                        {% for recipe in drafts %}
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card-editorial opacity-80">
+                                    <div class="card-img-wrapper">
+                                        {% if recipe.cover_image %}
+                                            <img src="{{ recipe.cover_image.url }}" class="card-img-editorial" alt="{{ recipe.title }}">
+                                        {% else %}
+                                            <div class="w-100 h-100 bg-secondary d-flex align-items-center justify-content-center text-white">No Photo</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="card-body-editorial">
+                                        <span class="card-meta-editorial text-muted">DRAFT</span>
+                                        <h3 class="fs-5"><a href="{% url 'recipe_detail' slug=recipe.slug %}" class="text-decoration-none text-dark">{{ recipe.title }}</a></h3>
+                                        <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-auto fs-7 text-secondary">
+                                            <span><i class="bi bi-clock"></i> {{ recipe.total_time }} mins</span>
+                                            <span>
+                                                <a href="{% url 'recipe_edit' slug=recipe.slug %}" class="btn btn-sm btn-outline-dark px-2 py-0">Edit</a>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="col-12 text-center py-5 text-secondary">
+                                <p>No current draft recipes.</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Favorites Pane -->
+            <div class="tab-pane fade" id="favorites-pane" role="tabpanel" aria-labelledby="favorites-tab">
+                <div class="row g-4">
+                    {% for recipe in favorites %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card-editorial">
+                                <div class="card-img-wrapper">
+                                    {% if recipe.cover_image %}
+                                        <img src="{{ recipe.cover_image.url }}" class="card-img-editorial" alt="{{ recipe.title }}">
+                                    {% else %}
+                                        <div class="w-100 h-100 bg-secondary d-flex align-items-center justify-content-center text-white">No Photo</div>
+                                    {% endif %}
+                                </div>
+                                <div class="card-body-editorial">
+                                    <span class="card-meta-editorial">{{ recipe.category.name|upper }} | By {{ recipe.author.username }}</span>
+                                    <h3 class="fs-5"><a href="{% url 'recipe_detail' slug=recipe.slug %}" class="text-decoration-none text-dark">{{ recipe.title }}</a></h3>
+                                    <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-auto fs-7 text-secondary">
+                                        <span><i class="bi bi-clock"></i> {{ recipe.total_time }} mins</span>
+                                        <span><i class="bi bi-heart-fill text-danger"></i> {{ recipe.like_count }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-12 text-center py-5 text-secondary">
+                            <p>No favorite recipes saved yet.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Cookbooks Pane -->
+            <div class="tab-pane fade" id="cookbooks-pane" role="tabpanel" aria-labelledby="cookbooks-tab">
+                <div class="row g-4">
+                    {% for cb in cookbooks %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card-editorial">
+                                <div class="card-img-wrapper" style="padding-top: 130%;">
+                                    {% if cb.cover_image %}
+                                        <img src="{{ cb.cover_image.url }}" class="card-img-editorial" alt="{{ cb.title }}">
+                                    {% else %}
+                                        <div class="w-100 h-100 bg-secondary d-flex align-items-center justify-content-center text-white">No Cover</div>
+                                    {% endif %}
+                                    <div class="position-absolute top-0 start-0 m-3 badge bg-dark py-2 px-3 fs-8 text-uppercase">
+                                        {{ cb.recipe_count }} Recipes
+                                    </div>
+                                </div>
+                                <div class="card-body-editorial text-center">
+                                    <h3 class="fs-5"><a href="{% url 'cookbook_detail' slug=cb.slug %}" class="text-decoration-none text-dark">{{ cb.title }}</a></h3>
+                                    <p class="text-secondary fs-7 mb-3">{{ cb.description|truncatewords:15 }}</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'cookbook_detail' slug=cb.slug %}" class="btn btn-editorial btn-accent btn-sm py-2">Open Cookbook</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-12 text-center py-5 text-secondary">
+                            <p>No digital cookbooks created yet.</p>
+                            {% if user == profile_user %}
+                                <a href="{% url 'cookbook_create' %}" class="btn btn-editorial btn-accent btn-sm mt-2">Create Cookbook</a>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Follow Chef toggle handler
+    const followBtn = document.getElementById('follow-chef-btn');
+    if (followBtn) {
+        followBtn.addEventListener('click', function() {
+            const username = this.getAttribute('data-username');
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+            
+            fetch(`/users/${username}/follow/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const countLabel = document.getElementById('followers-count-label');
+                if (countLabel) countLabel.innerText = data.follower_count;
+                
+                if (data.followed) {
+                    this.innerText = 'Following';
+                    this.className = 'btn btn-editorial btn-outline-editorial py-2 px-4';
+                } else {
+                    this.innerText = 'Follow Chef';
+                    this.className = 'btn btn-editorial btn-accent py-2 px-4';
+                }
+            })
+            .catch(err => console.error("Follow error:", err));
+        });
+    }
+</script>
+{% endblock %}
