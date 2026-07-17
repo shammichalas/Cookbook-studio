@@ -6,3 +6,5 @@ crispy-bootstrap5
 django-ckeditor-5
 psycopg2-binary
 python-dotenv
+supabase
+

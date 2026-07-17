@@ -122,3 +122,34 @@ The test suite validates views, user authentication flow, recipe details, and PD
 ```bash
 python manage.py test
 ```
+
+---
+
+## ⚡ Supabase Integration
+
+Cookbook Studio integrates with Supabase in two ways:
+
+### 1. PostgreSQL Database (Recommended)
+You can use Supabase as your managed PostgreSQL database. Uncomment the Supabase PostgreSQL variables in your `.env` file and replace `your-supabase-db-password` with your database password:
+
+```env
+DB_NAME=postgres
+DB_USER=postgres
+DB_PASSWORD=your-supabase-db-password
+DB_HOST=db.ikctffssrpazxupxthrg.supabase.co
+DB_PORT=6543
+```
+
+When these environment variables are uncommented in `.env`, the Django server dynamically switches to use the remote Supabase database instead of the local SQLite file.
+
+### 2. Python Supabase SDK
+The project has the official `supabase` Python SDK installed. You can import the initialized client from [supabase_client.py](file:///d:/Django%20project/cookbook_studio/supabase_client.py) to perform direct API calls (e.g., querying tables, uploading to Supabase Storage buckets, or integrating Supabase Auth):
+
+```python
+from cookbook_studio.supabase_client import supabase
+
+# Example: Fetching records from a custom Supabase table
+response = supabase.table('todos').select("*").execute()
+todos = response.data
+```
+
